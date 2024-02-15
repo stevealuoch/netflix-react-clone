@@ -4,6 +4,7 @@ pipeline {
         timeout(time: 20, unit: 'MINUTES')
     }
     stages {
+        // NPM dependencies
         stage('pull npm dependencies') {
             steps {
                 sh 'npm install'
@@ -14,7 +15,7 @@ pipeline {
             steps {
                 script {
                     // build image
-                    def myImage = docker.build("335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan:latest")
+                    docker.build("335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan:latest")
                 }
             }
         }
@@ -28,10 +29,10 @@ pipeline {
         stage('Push to ECR') {
             steps {
                 script {
-                    // Using the credential ID provided
-                    docker.withRegistry('https://335871625378.dkr.ecr.us-east-1.amazonaws.com', 'stevealuoch-ecr') {
-                        // No need to build the image again, just push
-                        def myImage = docker.image("335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan:latest")
+                    // https://<awsAccountNumber>.dkr.ecr.<region>.amazonaws.com/<netflix-app>, 'ecr:<region>:<credentialsId>
+                    docker.withRegistry('https://335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan', 'ecr:us-east-1:stevealuoch-ecr') {
+                        def myImage = docker.build("335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan:latest")
+                        // push image
                         myImage.push()
                     }
                 }
