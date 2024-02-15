@@ -31,8 +31,7 @@ rpipeline {
                 script {
                     // https://<awsAccountNumber>.dkr.ecr.<region>.amazonaws.com/<netflix-app>, 'ecr:<region>:<credentialsId>
                     docker.withRegistry('https://335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan', 'ecr:us-east-1:saluoch-ecr') {
-                        // build image
-                        def myImage = docker.build("335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan:latest")
+                     
                         // push image
                         myImage.push()
                     }
