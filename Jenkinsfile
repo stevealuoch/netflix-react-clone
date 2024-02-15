@@ -3,39 +3,39 @@ pipeline {
     options {
         timeout(time: 20, unit: 'MINUTES')
     }
-    stages{
-        // NPM dependencies
+    stages {
         stage('pull npm dependencies') {
             steps {
                 sh 'npm install'
             }
         }
-       stage('build Docker Image') {
+        
+        stage('build Docker Image') {
             steps {
                 script {
                     // build image
-                    docker.build("335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan:latest")
-               }
-            }
-        }
-        stage('Trivy Scan (Aqua)') {
-            steps {
-                sh 'trivy image --format template --output trivy_report.html 335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan:latest'
-            }
-       }
-        stage('Push to ECR') {
-            steps {
-                script{
-                    //https://<AwsAccountNumber>.dkr.ecr.<region>.amazonaws.com/netflix-app', 'ecr:<region>:<credentialsId>
-                    docker.withRegistry('https://335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan', 'ecr:us-east-1:stevealuoch-ecr') {
-                    // build image
                     def myImage = docker.build("335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan:latest")
-                    // push image
-                    myImage.push()
-                    }
                 }
             }
         }
         
+        stage('Trivy Scan (Aqua)') {
+            steps {
+                sh 'trivy image --format template --output trivy_report.html 335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan:latest'
+            }
+        }
+        
+        stage('Push to ECR') {
+            steps {
+                script {
+                    // Using the credential ID provided
+                    docker.withRegistry('https://335871625378.dkr.ecr.us-east-1.amazonaws.com', 'stevealuoch-ecr') {
+                        // No need to build the image again, just push
+                        def myImage = docker.image("335871625378.dkr.ecr.us-east-1.amazonaws.com/netflix-jan:latest")
+                        myImage.push()
+                    }
+                }
+            }
+        }
     }
 }
